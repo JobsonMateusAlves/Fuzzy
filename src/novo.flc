@@ -1,0 +1,56 @@
+
+FUNCTION_BLOCK tipper
+
+VAR_INPUT
+	velocidadeDoVento : REAL;
+    umidadeDoAr : REAL;
+    periodoDoAno : REAL;
+    pressaoAtmosferica : REAL;
+END_VAR
+
+VAR_OUTPUT
+	indicePluviometrico : REAL;
+END_VAR
+
+FUZZIFY velocidadeDoVento
+    TERM baixa := (0, 1) (4, 0) ;
+    TERM media := (1, 0) (4,1) (6,1) (9,0);
+    TERM alta := (6, 0) (9, 1);
+END_FUZZIFY
+
+FUZZIFY umidadeDoAr
+    TERM baixa := (0, 1) (4, 0) ;
+    TERM media := (1, 0) (4,1) (6,1) (9,0);
+    TERM alta := (6, 0) (9, 1);
+END_FUZZIFY
+
+FUZZIFY periodoDoAno
+    TERM baixa := (0, 1) (4, 0) ;
+    TERM media := (1, 0) (4,1) (6,1) (9,0);
+    TERM alta := (6, 0) (9, 1);
+END_FUZZIFY
+
+FUZZIFY pressaoAtmosferica
+    TERM baixa := (0, 1) (4, 0);
+    TERM media := (1, 0) (4,1) (6,1) (9,0);
+    TERM alta := (6, 0) (9, 1);
+END_FUZZIFY
+
+DEFUZZIFY indicePluviometrico
+	TERM cheap := (0,0) (5,1) (10,0);
+	TERM average := (10,0) (15,1) (20,0);
+	TERM generous := (20,0) (25,1) (30,0);
+	METHOD : COG;
+	DEFAULT := 0;
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;	// Use 'min' for 'and'
+	ACT : MIN;	// Use 'min' activation method
+	ACCU : MAX;	// Use 'max' accumulation method
+
+    RULE 1 : IF velocidadeDoVento IS media AND umidadeDoAr IS media AND periodoDoAno IS media AND pressaoAtmosferica IS media THEN indicePluviometrico IS generous;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

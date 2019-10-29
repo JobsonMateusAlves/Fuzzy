@@ -1,0 +1,99 @@
+
+FUNCTION_BLOCK pluviometro
+
+VAR_INPUT
+    velocidadeDoVento : REAL;
+    umidadeDoAr : REAL;
+    periodoDoAno : REAL;
+    pressaoAtmosferica : REAL;
+END_VAR
+
+VAR_OUTPUT
+    indicePluviometrico : REAL;
+END_VAR
+
+FUZZIFY velocidadeDoVento
+    TERM BAIXA := (0.0, 1) (10.0, 1) (15.0, 0);
+    TERM MEDIA := (14.7, 0) (20.4, 1) (26.2, 0);
+    TERM ALTA  := (23.0, 0) (45.0, 1) (1000.0, 1);
+END_FUZZIFY
+
+FUZZIFY umidadeDoAr
+    TERM BAIXA := (0.0, 1) (20.0, 1) (45.0, 0);
+    TERM MEDIA := (40.0, 0) (60.0, 1) (85.0, 0);
+    TERM ALTA  := (80.0, 0) (96.0, 1) (100.0, 1);
+END_FUZZIFY
+
+FUZZIFY periodoDoAno
+    TERM PRIMEIRO := (1.0, 1) (3.0, 1) (7.0, 0);
+    TERM SEGUNDO  := (6.0, 0) (10.0, 1) (12.0, 1);
+END_FUZZIFY
+
+FUZZIFY pressaoAtmosferica
+    TERM BAIXA := (0.0, 1) (1000.0, 1) (1015.0, 0);
+    TERM ALTA  := (1013.0, 0) (1018.0, 1) (1020.0, 1);
+END_FUZZIFY
+//------------------------------------- END_FUZZIFY -----------------------------------------
+
+//-------------------------------------- DEFUZZIFY ------------------------------------------
+
+DEFUZZIFY indicePluviometrico
+
+    TERM BAIXA      := (0.1, 1) (2.5, 1) (5.0, 0);
+    TERM FRACA      := (4.0, 0) (10.0, 1) (15.0, 0);
+    TERM MODERADA   := (12.0, 0) (20.0, 1) (25.0, 0);
+    TERM FORTE      := (20.0, 0) (37.5, 1) (50.0, 0);
+    TERM VIOLENTA   := (40.0, 0) (55.0, 1) (60.0, 1);
+
+    METHOD : COG;  // Método de defuzzificação (Padrão é o Centro de Gravidade)
+    DEFAULT := 0;  // Valor default caso nenhuma regra seja ativada
+END_DEFUZZIFY
+
+//------------------------------------- END_FUZZIFY -----------------------------------------
+
+//------------------------------------- RULE_BLOCK ------------------------------------------
+RULEBLOCK No1
+    AND : MIN;  // Método MIN utilizado no processamento do operador lógico AND
+    ACT : MIN;  // Método de ativação
+    ACCU : MAX; // método de acumulação
+
+    RULE 1 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS BAIXA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS MODERADA;
+    RULE 2 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS BAIXA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS FRACA;
+    RULE 3 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS BAIXA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS FRACA;
+    RULE 4 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS BAIXA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS BAIXA;
+    RULE 5 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS MEDIA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS FORTE;
+    RULE 6 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS MEDIA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS FRACA;
+    RULE 7 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS MEDIA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS FRACA;
+    RULE 8 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS MEDIA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS BAIXA;
+    RULE 9 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS ALTA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS FORTE;
+    RULE 10 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS ALTA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS MODERADA;
+    RULE 11 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS ALTA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS MODERADA;
+    RULE 12 : IF velocidadeDoVento IS BAIXA AND umidadeDoAr IS ALTA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS FRACA;
+    RULE 13 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS BAIXA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS MODERADA;
+    RULE 14 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS BAIXA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS FRACA;
+    RULE 15 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS BAIXA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS MODERADA;
+    RULE 16 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS BAIXA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS BAIXA;
+    RULE 17 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS MEDIA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS FORTE;
+    RULE 18 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS MEDIA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS MODERADA;
+    RULE 19 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS MEDIA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS FRACA;
+    RULE 20 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS MEDIA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS BAIXA;
+    RULE 21 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS ALTA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS VIOLENTA;
+    RULE 22 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS ALTA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS MODERADA;
+    RULE 23 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS ALTA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS MODERADA;
+    RULE 24 : IF velocidadeDoVento IS MEDIA AND umidadeDoAr IS ALTA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS FRACA;
+    RULE 25 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS BAIXA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS MODERADA;
+    RULE 26 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS BAIXA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS FRACA;
+    RULE 27 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS BAIXA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS FRACA;
+    RULE 28 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS BAIXA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS BAIXA;
+    RULE 29 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS MEDIA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS VIOLENTA;
+    RULE 30 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS MEDIA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS FRACA;
+    RULE 31 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS MEDIA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS MODERADA;
+    RULE 32 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS MEDIA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS BAIXA;
+    RULE 33 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS ALTA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS VIOLENTA;
+    RULE 34 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS ALTA AND periodoDoAno IS PRIMEIRO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS MODERADA;
+    RULE 35 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS ALTA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS BAIXA THEN indicePluviometrico IS VIOLENTA;
+    RULE 36 : IF velocidadeDoVento IS ALTA AND umidadeDoAr IS ALTA AND periodoDoAno IS SEGUNDO AND pressaoAtmosferica IS ALTA THEN indicePluviometrico IS BAIXA;
+
+END_RULEBLOCK
+//----------------------------------- END_RULE_BLOCK ----------------------------------------
+END_FUNCTION_BLOCK
